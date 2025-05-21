@@ -1,4 +1,4 @@
-import { Telegraf, session } from "telegraf"; // , Extra
+import { Telegraf, session } from "telegraf";
 import TelegrafI18n from "telegraf-i18n";
 import commandMiddleware from "telegraf-cmd-args";
 import axios from "axios";

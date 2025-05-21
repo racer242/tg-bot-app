@@ -1,5 +1,3 @@
-const settings = {
-  irregularVerbsSourcePath: "public/irregular_verbs.xlsx",
-};
+const settings = {};
 
 export default settings;
