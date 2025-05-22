@@ -12,8 +12,8 @@ import locales from "../configuration/locales";
  */
 class TelegramBot {
   bot;
-
   defaultLocale;
+  params;
 
   constructor() {
     this.bot = new Telegraf(process.env.BOT_TOKEN);
@@ -21,10 +21,28 @@ class TelegramBot {
     process.once("SIGTERM", () => this.bot.stop("SIGTERM"));
   }
 
+  getParams(ctx) {
+    return {};
+  }
+
+  /**
+   */
+  getInitSessionData(ctx) {
+    return {};
+  }
+
   /**
    */
   async initCtx(ctx) {
-    ctx.session ??= {};
+    ctx.session ??= {
+      messageLog: [],
+      ...this.getInitSessionData(),
+    };
+    ctx.params = {
+      timeWindow: 5000,
+      maxMessages: 10,
+      ...this.getParams(ctx),
+    };
   }
 
   /**
@@ -45,11 +63,22 @@ class TelegramBot {
     console.log(error);
   }
 
+  async rateLimitMiddleware(ctx, next) {
+    const now = Date.now();
+
+    ctx.session.messageLog = ctx.session.messageLog.filter(
+      (timestamp) => timestamp > now - ctx.params.timeWindow
+    );
+    if (ctx.session.messageLog.length >= ctx.params.maxMessages) {
+      return ctx.reply(ctx.i18n.t("floodBlocked"));
+    }
+    ctx.session.messageLog.push(now);
+    return next();
+  }
+
   /**
    */
-  init(params) {
-    this.params = params;
-
+  init() {
     [this.defaultLocale] = Object.entries(locales).find(
       ([, value]) => value.isDefault
     );
@@ -101,6 +130,8 @@ class TelegramBot {
       await this.setCommandsMenu(ctx);
       return this.replyHelp(ctx);
     });
+
+    this.bot.use(this.rateLimitMiddleware);
 
     this.bot.on("polling_error", this.errorHandler);
 

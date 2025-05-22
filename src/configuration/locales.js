@@ -3,6 +3,7 @@ const locales = {
     isDefault: true,
     start: `👋 Hello! I'm a AIAPI bot 🤖!`,
     help: `How can I help you man? 🥸`,
+    floodBlocked: `Not so fast! 👮‍♂️`,
     buttons: {
       name: "Get name",
       change: "Change name",
@@ -39,6 +40,7 @@ const locales = {
   ru: {
     start: `👋 Привет! Я AIAPI бот 🤖!`,
     help: `Чем тебе помочь, человек❓`,
+    floodBlocked: `Not so fast! 👮‍♂️`,
     buttons: {
       name: "Get name",
       change: "Change name",

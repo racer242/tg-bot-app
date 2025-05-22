@@ -12,8 +12,8 @@ class AiApiBot extends TelegramBot {
     super();
   }
 
-  async initCtx(ctx) {
-    ctx.session ??= {
+  getInitSessionData(ctx) {
+    return {
       state: "idle",
       firstName: "John",
       lastName: "Sina",
@@ -46,8 +46,8 @@ class AiApiBot extends TelegramBot {
     console.log("!!!!", error, "!!!!");
   }
 
-  async init(params) {
-    await super.init(params);
+  async init() {
+    await super.init();
 
     this.userNameScene = new UserNameScene();
     this.bot.use(new Scenes.Stage([this.userNameScene.init()]).middleware());
