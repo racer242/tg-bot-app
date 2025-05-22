@@ -1,4 +1,4 @@
-import { Markup } from "telegraf"; // , Extra
+import { Markup, Scenes } from "telegraf"; // , Extra
 import TelegramBot from "./TelegramBot";
 import { message } from "telegraf/filters";
 import UserNameScene from "./scenes/UserNameScene";
@@ -13,7 +13,12 @@ class AiApiBot extends TelegramBot {
   }
 
   async initCtx(ctx) {
-    ctx.session ??= { state: "idle", firstName: "John", lastName: "Sina" };
+    ctx.session ??= {
+      state: "idle",
+      firstName: "John",
+      lastName: "Sina",
+      age: 50,
+    };
   }
 
   async getCommandsMenu(ctx) {
@@ -40,8 +45,8 @@ class AiApiBot extends TelegramBot {
   async init(params) {
     await super.init(params);
 
-    this.nameScene = new UserNameScene();
-    this.bot.use(this.nameScene.init());
+    this.userNameScene = new UserNameScene();
+    this.bot.use(new Scenes.Stage([this.userNameScene.init()]).middleware());
 
     this.bot.command("state", (ctx, next) => {
       let t = ctx.session.state;
@@ -54,21 +59,21 @@ class AiApiBot extends TelegramBot {
     });
 
     this.bot.command("change", async (ctx, next) => {
-      return this.nameScene.start(ctx);
+      return this.userNameScene.start(ctx);
     });
 
     this.bot.action("change", async (ctx, next) => {
-      return this.nameScene.start(ctx);
+      return this.userNameScene.start(ctx);
     });
 
     this.bot.command("name", async (ctx, next) => {
-      let { firstName: f, lastName: l } = ctx.session;
-      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l }));
+      let { firstName: f, lastName: l, age: a } = ctx.session;
+      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
     });
 
     this.bot.action("name", async (ctx, next) => {
-      let { firstName: f, lastName: l } = ctx.session;
-      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l }));
+      let { firstName: f, lastName: l, age: a } = ctx.session;
+      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
     });
 
     this.bot.on(message("sticker"), (ctx) => {
@@ -136,16 +141,16 @@ class AiApiBot extends TelegramBot {
 
     this.bot.hears(/^\.\.\./, (ctx) => {
       if (ctx?.chat?.type === "group") {
-        ctx.message.text = ctx.message.text.slice(3);
         ctx.replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard());
       } else {
         ctx.replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard());
       }
     });
 
-    this.bot.hears(/.*/gi, (ctx) => {
+    this.bot.on(message("text"), async (ctx) => {
+      await ctx.replyWithHTML(ctx.i18n.t("on.message"));
       return ctx.replyWithHTML(
-        ctx.i18n.t("on.message"),
+        ctx.update.message.text,
         Markup.removeKeyboard()
       );
     });

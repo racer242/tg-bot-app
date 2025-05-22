@@ -1,33 +1,45 @@
 import { message } from "telegraf/filters";
 
-const { Composer, Scenes } = require("telegraf");
+const { Composer, Scenes, Markup } = require("telegraf");
 
 class UserNameScene {
   constructor() {}
 
   init() {
-    const first_handler = new Composer();
-    const last_handler = new Composer();
-    const exit = new Composer();
-
-    first_handler.hears(/.+/, async (ctx) => {
+    const first_handler = async (ctx) => {
       await ctx.replyWithHTML(ctx.i18n.t("enter.firstName"));
       return ctx.wizard.next();
-    });
+    };
 
-    last_handler.hears(/.+/, async (ctx) => {
+    const last_handler = async (ctx) => {
       ctx.wizard.state.firstName = ctx.message.text;
       await ctx.replyWithHTML(ctx.i18n.t("enter.lastName"));
       return ctx.wizard.next();
-    });
+    };
 
-    exit.on(message("text"), async (ctx) => {
+    const age_handler = async (ctx) => {
       ctx.wizard.state.lastName = ctx.message.text;
+      await ctx.replyWithHTML(
+        ctx.i18n.t("enter.age"),
+        Markup.inlineKeyboard([
+          Markup.button.callback(ctx.i18n.t("buttons.back"), `reLastName`),
+        ])
+      );
+      return ctx.wizard.next();
+    };
+
+    const exit = new Composer();
+    exit.on(message("text"), async (ctx) => {
+      ctx.wizard.state.age = ctx.message.text;
+      console.log(ctx.wizard);
+
       let f = ctx.wizard.state.firstName;
       let l = ctx.wizard.state.lastName;
-      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l }));
+      let a = ctx.wizard.state.age;
+      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
       ctx.session.firstName = f;
       ctx.session.lastName = l;
+      ctx.session.age = a;
       return ctx.scene.leave();
     });
 
@@ -35,9 +47,21 @@ class UserNameScene {
       "wizard_scene",
       first_handler,
       last_handler,
+      age_handler,
       exit
     );
-    return new Scenes.Stage([wizard_scene]);
+
+    wizard_scene.action("reLastName", async (ctx) => {
+      await ctx.replyWithHTML(ctx.i18n.t("enter.lastName"));
+      return ctx.wizard.back();
+    });
+
+    wizard_scene.use(async (ctx, next) => {
+      // await ctx.replyWithHTML(ctx.i18n.t("on.test"));
+      return next();
+    });
+
+    return wizard_scene;
   }
 
   async start(ctx, next) {

@@ -8,6 +8,7 @@ const locales = {
       change: "Change name",
       help: "Help",
       state: "Get state",
+      back: "Back",
     },
     commands: {
       name: "Get name",
@@ -25,12 +26,14 @@ const locales = {
       message: "THIS IS MESSAGE!",
       caption:
         "☝️ By the way, a comment has been added to the attachment:\n${t}",
-      name: "Your name is:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}",
+      name: "Your name is:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}\n\nage\n${a}",
       state: "☝️ Current state is:\n${t}",
     },
     enter: {
       firstName: "Enter your first name:",
       lastName: "Enter your last name:",
+      age: "Enter your age:",
+      reage: "Reenter your age:",
     },
   },
   ru: {
@@ -41,6 +44,7 @@ const locales = {
       change: "Change name",
       help: "Help",
       state: "Get state",
+      back: "Back",
     },
     commands: {
       name: "Get name",
@@ -59,12 +63,13 @@ const locales = {
       message: "THIS IS MESSAGE!",
       caption:
         "☝️ By the way, a comment has been added to the attachment:\n${t}",
-      name: "Your name is:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}",
+      name: "Your name is:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}\n\nage\n${a}",
       state: "☝️ Current state is:\n${t}",
     },
     enter: {
       firstName: "Enter your first name:",
       lastName: "Enter your last name:",
+      age: "Enter your age:",
     },
   },
 };
