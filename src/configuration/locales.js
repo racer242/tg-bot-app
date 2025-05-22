@@ -18,12 +18,19 @@ const locales = {
     on: {
       audio:
         "This is audio: 🎶 Title <code>${t}</code> \n🎸 Performer <code>${p}</code>",
-      contact: "This is contact: 🐵 First name\n${f}\n\n🙈 Last name\n${l }",
+      contact: "This is contact:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l }",
       unknown: "🤷‍♂️ Can't say anything about this attachment yet...",
       canceled: "✖️ Canceled!",
       test: "THIS IS TEST!",
+      message: "THIS IS MESSAGE!",
       caption:
         "☝️ By the way, a comment has been added to the attachment:\n${t}",
+      name: "Your name is:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}",
+      state: "☝️ Current state is:\n${t}",
+    },
+    enter: {
+      firstName: "Enter your first name:",
+      lastName: "Enter your last name:",
     },
   },
   ru: {
@@ -45,12 +52,19 @@ const locales = {
       state: "",
       audio:
         "This is audio: 🎶 Title <code>${t}</code> \n🎸 Performer <code>${p}</code>",
-      contact: "This is contact: 🐵 First name\n${f}\n\n🙈 Last name\n${l }",
+      contact: "This is contact:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}",
       unknown: "🤷‍♂️ Can't say anything about this attachment yet...",
       canceled: "✖️ Canceled!",
       test: "THIS IS TEST!",
+      message: "THIS IS MESSAGE!",
       caption:
         "☝️ By the way, a comment has been added to the attachment:\n${t}",
+      name: "Your name is:\n\n🐵 First name\n${f}\n\n🙈 Last name\n${l}",
+      state: "☝️ Current state is:\n${t}",
+    },
+    enter: {
+      firstName: "Enter your first name:",
+      lastName: "Enter your last name:",
     },
   },
 };

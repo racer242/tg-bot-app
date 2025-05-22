@@ -12,7 +12,7 @@ import app from "../src/app";
  * Init logger.
  */
 logger.enable(process.env.DEBUG);
-const debug = logger("translateEasyBot:server");
+const debug = logger("AIAPI Bot:server");
 
 /**
  * Get port from environment and store in Express.

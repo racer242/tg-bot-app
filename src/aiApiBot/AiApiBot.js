@@ -1,6 +1,7 @@
 import { Markup } from "telegraf"; // , Extra
 import TelegramBot from "./TelegramBot";
 import { message } from "telegraf/filters";
+import UserNameScene from "./scenes/UserNameScene";
 
 /**
  * [TelegramBot description]
@@ -12,7 +13,7 @@ class AiApiBot extends TelegramBot {
   }
 
   async initCtx(ctx) {
-    ctx.session ??= { state: "idle", name: "unknown" };
+    ctx.session ??= { state: "idle", firstName: "John", lastName: "Sina" };
   }
 
   async getCommandsMenu(ctx) {
@@ -39,41 +40,63 @@ class AiApiBot extends TelegramBot {
   async init(params) {
     await super.init(params);
 
-    // this.bot.command("state", (ctx) => {
-    //   let state = ctx.state.command?.splitArgs[0];
-    //   ctx.session.state = state;
-    //   ctx.replyWithHTML(ctx.i18n.t("on.caption", { t }));
-    // });
+    this.nameScene = new UserNameScene();
+    this.bot.use(this.nameScene.init());
 
-    this.bot.command("state", (ctx) => {
-      let t = state;
-      ctx.replyWithHTML(ctx.i18n.t("on.caption", { t }));
+    this.bot.command("state", (ctx, next) => {
+      let t = ctx.session.state;
+      return ctx.replyWithHTML(ctx.i18n.t("on.state", { t }));
+    });
+
+    this.bot.action("state", async (ctx, next) => {
+      let t = ctx.session.state;
+      return ctx.replyWithHTML(ctx.i18n.t("on.state", { t }));
+    });
+
+    this.bot.command("change", async (ctx, next) => {
+      return this.nameScene.start(ctx);
+    });
+
+    this.bot.action("change", async (ctx, next) => {
+      return this.nameScene.start(ctx);
+    });
+
+    this.bot.command("name", async (ctx, next) => {
+      let { firstName: f, lastName: l } = ctx.session;
+      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l }));
+    });
+
+    this.bot.action("name", async (ctx, next) => {
+      let { firstName: f, lastName: l } = ctx.session;
+      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l }));
     });
 
     this.bot.on(message("sticker"), (ctx) => {
       if (ctx.update?.message?.sticker?.emoji) {
-        ctx.reply(ctx.update.message.sticker.emoji);
+        return ctx.reply(ctx.update.message.sticker.emoji);
       } else {
-        ctx.reply("🤷‍♂️");
+        return ctx.reply("🤷‍♂️");
       }
     });
 
     const captionReply = async (ctx) => {
       if (ctx.message?.caption) {
         let t = ctx.message.caption;
-        ctx.replyWithHTML(ctx.i18n.t("on.caption", { t }));
+        return ctx.replyWithHTML(ctx.i18n.t("on.caption", { t }));
       }
+      return null;
     };
 
     this.bot.on(message("audio"), async (ctx) => {
       if (ctx.update?.message?.audio) {
         let t = ctx.update.message.audio.title ?? ctx.i18n.t("nobodyKnows");
         let p = ctx.update.message.audio.performer ?? ctx.i18n.t("nobodyKnows");
-        ctx.replyWithHTML(ctx.i18n.t("on.audio", { t, p }));
+        let reply = await ctx.replyWithHTML(ctx.i18n.t("on.audio", { t, p }));
+        let caption = captionReply(ctx);
+        return caption ? caption : reply;
       } else {
-        ctx.reply("🤷‍♂️");
+        return ctx.reply("🤷‍♂️");
       }
-      captionReply(ctx);
     });
     this.bot.on(message("contact"), async (ctx) => {
       if (ctx.update?.message?.contact) {
@@ -81,17 +104,19 @@ class AiApiBot extends TelegramBot {
           ctx.update.message.contact.first_name ?? ctx.i18n.t("nobodyKnows");
         let l =
           ctx.update.message.contact.last_name ?? ctx.i18n.t("nobodyKnows");
-        ctx.replyWithHTML(ctx.i18n.t("on.contact", { f, l }));
+        let reply = await ctx.replyWithHTML(ctx.i18n.t("on.contact", { f, l }));
+        let caption = captionReply(ctx);
+        return caption ? caption : reply;
       } else {
-        ctx.reply("🤷‍♂️");
+        return ctx.reply("🤷‍♂️");
       }
-      captionReply(ctx);
     });
 
     const otherFormatsReply = async (ctx) => {
       if (ctx?.chat?.type === "group") return;
-      ctx.replyWithHTML(ctx.i18n.t("on.unknown"));
-      captionReply(ctx);
+      let reply = await ctx.replyWithHTML(ctx.i18n.t("on.unknown"));
+      let caption = captionReply(ctx);
+      return caption ? caption : reply;
     };
 
     this.bot.on(message("animation"), otherFormatsReply);
@@ -116,6 +141,19 @@ class AiApiBot extends TelegramBot {
       } else {
         ctx.replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard());
       }
+    });
+
+    this.bot.hears(/.*/gi, (ctx) => {
+      return ctx.replyWithHTML(
+        ctx.i18n.t("on.message"),
+        Markup.removeKeyboard()
+      );
+    });
+
+    this.bot.use(async (ctx, next) => {
+      console.time(`Processing update ${ctx.update.update_id}`);
+      await next();
+      console.timeEnd(`Processing update ${ctx.update.update_id}`);
     });
   }
 }

@@ -66,15 +66,15 @@ class TelegramBot {
     }
     this.bot.use(session());
     this.bot.use(this.i18n.middleware());
-    this.bot.use((ctx, next) => {
+    this.bot.use(async (ctx, next) => {
       try {
-        commandMiddleware(ctx, next);
+        await commandMiddleware(ctx, next);
       } catch (e) {
         console.log(e);
         next();
       }
     });
-    this.bot.use((ctx, next) => {
+    this.bot.use(async (ctx, next) => {
       this.initCtx(ctx);
       next();
     });
