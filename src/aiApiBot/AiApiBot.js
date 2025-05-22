@@ -42,6 +42,10 @@ class AiApiBot extends TelegramBot {
     );
   }
 
+  async errorHandler(error) {
+    console.log("!!!!", error, "!!!!");
+  }
+
   async init(params) {
     await super.init(params);
 
@@ -68,12 +72,12 @@ class AiApiBot extends TelegramBot {
 
     this.bot.command("name", async (ctx, next) => {
       let { firstName: f, lastName: l, age: a } = ctx.session;
-      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
+      return ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
     });
 
     this.bot.action("name", async (ctx, next) => {
       let { firstName: f, lastName: l, age: a } = ctx.session;
-      await ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
+      return ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
     });
 
     this.bot.on(message("sticker"), (ctx) => {
@@ -87,7 +91,9 @@ class AiApiBot extends TelegramBot {
     const captionReply = async (ctx) => {
       if (ctx.message?.caption) {
         let t = ctx.message.caption;
-        return ctx.replyWithHTML(ctx.i18n.t("on.caption", { t }));
+        return ctx
+          .replyWithHTML(ctx.i18n.t("on.caption", { t }))
+          .catch(this.errorHandler);
       }
       return null;
     };
@@ -119,7 +125,9 @@ class AiApiBot extends TelegramBot {
 
     const otherFormatsReply = async (ctx) => {
       if (ctx?.chat?.type === "group") return;
-      let reply = await ctx.replyWithHTML(ctx.i18n.t("on.unknown"));
+      let reply = await ctx
+        .replyWithHTML(ctx.i18n.t("on.unknown"))
+        .catch(this.errorHandler);
       let caption = captionReply(ctx);
       return caption ? caption : reply;
     };
@@ -136,23 +144,30 @@ class AiApiBot extends TelegramBot {
     this.bot.on(message("voice"), otherFormatsReply);
 
     this.bot.hears(/✖️ .+/, async (ctx) => {
-      ctx.replyWithHTML(ctx.i18n.t("on.canceled"), Markup.removeKeyboard());
+      return ctx
+        .replyWithHTML(ctx.i18n.t("on.canceled"), Markup.removeKeyboard())
+        .catch(this.errorHandler);
     });
 
     this.bot.hears(/^\.\.\./, (ctx) => {
       if (ctx?.chat?.type === "group") {
-        ctx.replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard());
+        return ctx
+          .replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard())
+          .catch(this.errorHandler);
       } else {
-        ctx.replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard());
+        return ctx
+          .replyWithHTML(ctx.i18n.t("on.test"), Markup.removeKeyboard())
+          .catch(this.errorHandler);
       }
     });
 
     this.bot.on(message("text"), async (ctx) => {
-      await ctx.replyWithHTML(ctx.i18n.t("on.message"));
-      return ctx.replyWithHTML(
-        ctx.update.message.text,
-        Markup.removeKeyboard()
-      );
+      await ctx
+        .replyWithHTML(ctx.i18n.t("on.message"))
+        .catch(this.errorHandler);
+      return await ctx
+        .replyWithHTML(ctx.update.message.text, Markup.removeKeyboard())
+        .catch(this.errorHandler);
     });
 
     this.bot.use(async (ctx, next) => {

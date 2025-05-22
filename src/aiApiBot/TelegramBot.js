@@ -34,11 +34,15 @@ class TelegramBot {
   }
 
   async setCommandsMenu(ctx) {
-    this.bot.telegram.setMyCommands(await this.getCommandsMenu(ctx));
+    return this.bot.telegram.setMyCommands(await this.getCommandsMenu(ctx));
   }
 
   async replyHelp(ctx) {
-    ctx.replyWithHTML(ctx.i18n.t("help"));
+    return ctx.replyWithHTML(ctx.i18n.t("help"));
+  }
+
+  async errorHandler(error) {
+    console.log(error);
   }
 
   /**
@@ -68,31 +72,39 @@ class TelegramBot {
     this.bot.use(this.i18n.middleware());
     this.bot.use(async (ctx, next) => {
       try {
-        await commandMiddleware(ctx, next);
+        return await commandMiddleware(ctx, next);
       } catch (e) {
         console.log(e);
-        next();
+        return next();
       }
     });
     this.bot.use(async (ctx, next) => {
       this.initCtx(ctx);
-      next();
+      return next();
     });
 
     this.bot.start(async (ctx) => {
       this.setCommandsMenu(ctx);
-      await ctx.replyWithHTML(
+      return await ctx.replyWithHTML(
         ctx.i18n.t("start", {
           username: ctx.from.username,
         })
       );
-      await ctx.replyWithHTML(ctx.i18n.t("help"));
     });
 
-    this.bot.help((ctx) => {
-      this.setCommandsMenu(ctx);
-      this.replyHelp(ctx);
+    this.bot.help(async (ctx) => {
+      await this.setCommandsMenu(ctx);
+      return this.replyHelp(ctx);
     });
+
+    this.bot.action("help", async (ctx, next) => {
+      await this.setCommandsMenu(ctx);
+      return this.replyHelp(ctx);
+    });
+
+    this.bot.on("polling_error", this.errorHandler);
+
+    this.bot.catch(this.errorHandler);
   }
 
   async startPollMode() {
@@ -102,10 +114,8 @@ class TelegramBot {
       .get(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/deleteWebhook`)
       .then(() => {
         this.bot.launch();
-      })
-      .catch((error) => {
-        console.log(error);
       });
+    // .catch(this.errorHandler);
   }
 
   async startHttpMode() {
