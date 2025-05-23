@@ -8,7 +8,7 @@ import TranslateBot from "./aiApiBot/AiApiBot";
 
 const telegramBot = new TranslateBot();
 
-telegramBot.init({});
+telegramBot.init();
 
 telegramBot.start();
 

@@ -1,6 +1,7 @@
 import { Markup, Scenes } from "telegraf"; // , Extra
 import TelegramBot from "./TelegramBot";
 import { message } from "telegraf/filters";
+import { match, reply } from "telegraf-i18n";
 import UserNameScene from "./scenes/UserNameScene";
 
 /**
@@ -31,7 +32,7 @@ class AiApiBot extends TelegramBot {
   }
 
   async replyHelp(ctx) {
-    await ctx.replyWithHTML(
+    let lastMessage = await ctx.replyWithHTML(
       ctx.i18n.t("help"),
       Markup.inlineKeyboard([
         Markup.button.callback(ctx.i18n.t("buttons.name"), "name"),
@@ -40,6 +41,18 @@ class AiApiBot extends TelegramBot {
         Markup.button.callback(ctx.i18n.t("buttons.help"), "help"),
       ])
     );
+    await ctx.reply(
+      ctx.i18n.t("help"),
+      Markup.keyboard([
+        [ctx.i18n.t("buttons.name"), ctx.i18n.t("buttons.change")],
+        [ctx.i18n.t("buttons.state")],
+        [ctx.i18n.t("buttons.help")],
+      ])
+        .oneTime()
+        .resize()
+    );
+    console.log(lastMessage.message_id);
+    await ctx.deleteMessage(lastMessage.message_id);
   }
 
   async errorHandler(error) {
@@ -76,6 +89,11 @@ class AiApiBot extends TelegramBot {
     });
 
     this.bot.action("name", async (ctx, next) => {
+      let { firstName: f, lastName: l, age: a } = ctx.session;
+      return ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
+    });
+
+    this.bot.hears(match("buttons.name"), async (ctx, next) => {
       let { firstName: f, lastName: l, age: a } = ctx.session;
       return ctx.replyWithHTML(ctx.i18n.t("on.name", { f, l, a }));
     });
